@@ -3,16 +3,19 @@
 #include "wifi/wifi.h"
 
 bool isBleInitialized = false;
+bool isBleDeviceConnected = false;
 bool isBleAdvertising = false;
 
 static BLECharacteristic *pTxChar;
 
 class ServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer *s) {
+        isBleDeviceConnected = true;
         Serial.println("[BLE] Device connected");
     }
 
     void onDisconnect(BLEServer *s) {
+        isBleDeviceConnected = false;
         Serial.println("[BLE] Device disconnected");
     }
 };
@@ -61,7 +64,6 @@ void initBle() {
 
     pService->start();
     Serial.println("[BLE] Initialized as " + getDeviceName());
-    startBleAdvertising();
 
     isBleInitialized = true;
 }

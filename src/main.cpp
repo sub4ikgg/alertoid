@@ -8,6 +8,7 @@ WiFiClientSecure secureClient;
 WiFiClient client;
 
 int bleToggleCounter = 0;
+int resourceCheckingCounter = 0;
 
 void setInsecureWifiClient();
 void checkResourceAvailability();
@@ -20,9 +21,9 @@ void setup() {
   preparePinMode();
   testLeds();
 
+  initBle();
   setInsecureWifiClient();
   connectToWifi();
-  initBle();
 }
 
 void setInsecureWifiClient() {
@@ -58,15 +59,22 @@ void loop() {
     return;
   }
 
-  checkResourceAvailability();
+  if (resourceCheckingCounter >= 100) {
+    resourceCheckingCounter = 0;
+    checkResourceAvailability();
+  } else {
+    resourceCheckingCounter++;
+    delay(100);
+  }
 }
 
 void checkResourceAvailability() {
-  Serial.println("Free Heap: " + String(ESP.getFreeHeap()));
+  if (digitalRead(0) == LOW && isBleAdvertising) return;
+
   Serial.print("[Main] Checking resource availability... ");
   
   HTTPClient http;
-  http.begin("https://httpbin.org/status/503");
+  http.begin("https://httpbin.org/status/200");
 
   int code = http.GET();
   http.end();
@@ -81,7 +89,6 @@ void checkResourceAvailability() {
     toggleRedPin(false);
 
     Serial.println("Resource is available (200 OK)");
-    delay(10000);
   } else {
     Serial.println("Resource is not available (" + String(code) + ")");
     resourceIsNotAvailableBlink();
