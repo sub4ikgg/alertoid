@@ -60,6 +60,8 @@ void loop() {
     if (++bleAutoStopCounter >= BLE_AUTO_STOP_INTERVAL) {
       bleAutoStopCounter = 0;
       stopBleAdvertising();
+
+      resourceCheckingCounter = RESOURCE_CHECK_INTERVAL;
     }
 
     return;
