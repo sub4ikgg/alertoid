@@ -56,11 +56,11 @@ void initBle() {
     );
     pTxChar->addDescriptor(new BLE2902());
 
-    BLECharacteristic *pCmdChar = pService->createCharacteristic(
+    BLECharacteristic *pWifiConfChar = pService->createCharacteristic(
         BLE_WIFI_CONF_UUID,
         BLECharacteristic::PROPERTY_WRITE
     );
-    pCmdChar->setCallbacks(new WifiConfCallbacks());
+    pWifiConfChar->setCallbacks(new WifiConfCallbacks());
 
     pService->start();
     Serial.println("[BLE] Initialized as " + getDeviceName());

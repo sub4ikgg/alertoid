@@ -7,17 +7,24 @@
 WiFiClientSecure secureClient;
 WiFiClient client;
 
+const int BOOT_BUTTON_PIN = 0;
+const int SERIAL_BAUD_RATE = 115200;
+const int WIFI_CLIENT_TIMEOUT = 5;
+const int BLE_TOGGLE_PRESS_THRESHOLD = 3;
+const int RESOURCE_CHECK_INTERVAL = 100;
+const int HTTP_OK = 200;
+
 int bleToggleCounter = 0;
-int resourceCheckingCounter = 0;
+int resourceCheckingCounter = RESOURCE_CHECK_INTERVAL;
 
 void setInsecureWifiClient();
 void checkResourceAvailability();
 
 void setup() {
-  Serial.begin(115200);
-  client.setTimeout(5);
+  Serial.begin(SERIAL_BAUD_RATE);
+  client.setTimeout(WIFI_CLIENT_TIMEOUT);
 
-  pinMode(0, INPUT_PULLUP);
+  pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
   preparePinMode();
   testLeds();
 
@@ -31,10 +38,10 @@ void setInsecureWifiClient() {
 }
 
 void loop() {
-  if (digitalRead(0) == LOW && !isBleAdvertising) {
+  if (digitalRead(BOOT_BUTTON_PIN) == LOW && !isBleAdvertising) {
     bleToggleCounter++;
 
-    if (bleToggleCounter > 3)
+    if (bleToggleCounter > BLE_TOGGLE_PRESS_THRESHOLD)
     {
       bleToggleCounter = 0;
       startBleAdvertising();
@@ -59,7 +66,7 @@ void loop() {
     return;
   }
 
-  if (resourceCheckingCounter >= 100) {
+  if (resourceCheckingCounter >= RESOURCE_CHECK_INTERVAL) {
     resourceCheckingCounter = 0;
     checkResourceAvailability();
   } else {
@@ -69,9 +76,9 @@ void loop() {
 }
 
 void checkResourceAvailability() {
-  if (digitalRead(0) == LOW && isBleAdvertising) return;
+  if (digitalRead(BOOT_BUTTON_PIN) == LOW && isBleAdvertising) return;
 
-  Serial.print("[Main] Checking resource availability... ");
+  Serial.println("[Main] Checking resource availability...");
   
   HTTPClient http;
   http.begin("https://httpbin.org/status/200");
@@ -80,17 +87,17 @@ void checkResourceAvailability() {
   http.end();
 
   if (code < 0) {
-    Serial.println("Retrying..."); 
+    Serial.println("[Main] Retrying...");
     return;
   }
 
-  if (code == 200) {
+  if (code == HTTP_OK) {
     toggleGreenPin(true);
     toggleRedPin(false);
 
-    Serial.println("Resource is available (200 OK)");
+    Serial.println("[Main] Resource is available (200 OK)");
   } else {
-    Serial.println("Resource is not available (" + String(code) + ")");
+    Serial.println("[Main] Resource is not available (" + String(code) + ")");
     resourceIsNotAvailableBlink();
   }
 }

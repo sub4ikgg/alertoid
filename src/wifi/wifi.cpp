@@ -25,7 +25,7 @@ void connectToWifi() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.print("[Wi-Fi] Connecting to " + ssid);
+  Serial.println("[Wi-Fi] Connecting to " + ssid);
 
   toggleGreenPin(false);
 
@@ -38,8 +38,6 @@ void connectToWifi() {
         return;
     }
 
-    Serial.print(".");
-
     toggleYellowPin(true);
     delay(500);
 
@@ -49,10 +47,7 @@ void connectToWifi() {
 
   toggleGreenPin(true);
 
-  Serial.println("\n[Wi-Fi] Connected to " + ssid);
-
-  Serial.print("[Wi-Fi] Local IP: ");
-  Serial.println(WiFi.localIP());
+  Serial.println("[Wi-Fi] Connected to " + ssid);
 }
 
 void writeWifiConf(String ssid, String password) {
