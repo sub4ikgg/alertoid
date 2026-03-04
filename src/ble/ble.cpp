@@ -100,6 +100,11 @@ void initBle() {
     isBleInitialized = true;
 }
 
+void deinitBle() {
+    BLEDevice::deinit(true);
+    LOG(F("[BLE] Deinitialized"));
+}
+
 void startBleAdvertising() {
     if (isBleAdvertising) return;
 

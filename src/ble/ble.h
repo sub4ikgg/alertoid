@@ -15,6 +15,7 @@ extern bool isBleDeviceConnected;
 extern bool isBleAdvertising;
 
 void initBle();
+void deinitBle();
 void startBleAdvertising();
 void stopBleAdvertising();
 
