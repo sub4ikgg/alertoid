@@ -13,8 +13,8 @@ const int BOOT_BUTTON_PIN            = 0;
 const int SERIAL_BAUD_RATE           = 115200;
 const int WIFI_CLIENT_TIMEOUT        = 5;
 const int BLE_TOGGLE_PRESS_THRESHOLD = 3;
-const int BLE_AUTO_STOP_INTERVAL     = 120; // 60 sec.
-const int RESOURCE_CHECK_INTERVAL    = 20; // 2 sec.
+const int BLE_AUTO_STOP_INTERVAL     = 240; // 120 sec.
+const int RESOURCE_CHECK_INTERVAL    = 50; // 5 sec.
 
 int bleToggleCounter = 0;
 int bleAutoStopCounter = 0;
@@ -44,6 +44,10 @@ static void setInsecureWifiClient() {
 
 void loop() {
   if (digitalRead(BOOT_BUTTON_PIN) == LOW && !isBleAdvertising) {
+    toggleRedPin(false);
+    toggleGreenPin(false);
+    toggleYellowPin(true);
+
     if (++bleToggleCounter > BLE_TOGGLE_PRESS_THRESHOLD)
     {
       bleToggleCounter = 0;
@@ -88,6 +92,6 @@ void loop() {
     checkResourceAvailability();
   } else {
     resourceCheckingCounter++;
-    delay(100);
+    delay(10);
   }
 }
