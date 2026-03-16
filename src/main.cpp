@@ -34,14 +34,14 @@ void setup() {
   testLeds();
 
   initBle();
+  setInsecureWifiClient();
 
   if (esp_reset_reason() == ESP_RST_SW) {
     LOG(F("[BLE] Auto-advertising after SW reboot"));
     startBleAdvertising();
+  } else {
+    connectToWifi();
   }
-
-  setInsecureWifiClient();
-  connectToWifi();
 }
 
 static void setInsecureWifiClient() {
