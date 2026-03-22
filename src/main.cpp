@@ -41,10 +41,16 @@ void setup() {
   } else {
     connectToWifi();
   }
+
+  resourceCheckingCounter = getResourceCheckInterval();
+
+  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+  struct tm timeinfo;
+  while (!getLocalTime(&timeinfo)) { delay(500); }
 }
 
 static void setInsecureWifiClient() {
-  // secureClient.setInsecure();
+  secureClient.setInsecure();
 }
 
 void loop() {
