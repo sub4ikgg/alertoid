@@ -22,6 +22,7 @@ extern bool isUrlConfigChanged;
 
 extern bool isBleDeviceConnected;
 extern bool isBleAdvertising;
+extern bool bleRebootRequested;
 
 void initBle();
 void deinitBle();

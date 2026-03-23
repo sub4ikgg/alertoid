@@ -16,6 +16,8 @@ bool isBleInitialized = false;
 bool isBleDeviceConnected = false;
 bool isBleAdvertising = false;
 
+RTC_DATA_ATTR bool bleRebootRequested = false;
+
 static BLECharacteristic *pTxChar;
 static BLECharacteristic *pFirmwareChar;
 static String getDeviceName();
@@ -30,8 +32,8 @@ class ServerCallbacks : public BLEServerCallbacks {
 
     void onDisconnect(BLEServer *s) {
         isBleDeviceConnected = false;
-        LOG(F("[BLE] Device disconnected"));
-        stopBleAdvertising();
+        LOG(F("[BLE] Device disconnected, restarting ESP"));
+        ESP.restart();
     }
 };
 
@@ -87,6 +89,7 @@ class RebootCallbacks : public BLECharacteristicCallbacks {
         String msg = pChar->getValue().c_str();
         if (msg == "reboot") {
             LOG(F("[BLE] Rebooting..."));
+            bleRebootRequested = true;
             ESP.restart();
         }
     }

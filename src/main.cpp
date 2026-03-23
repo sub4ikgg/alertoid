@@ -7,12 +7,11 @@
 #include "resource/resource.h"
 #include "debug.h"
 
+
 WiFiClientSecure secureClient;
-WiFiClient client;
 
 const int BOOT_BUTTON_PIN            = 0;
 const int SERIAL_BAUD_RATE           = 115200;
-const int WIFI_CLIENT_TIMEOUT        = 5;
 const int BLE_TOGGLE_PRESS_THRESHOLD = 3;
 const int BLE_AUTO_STOP_INTERVAL     = 240; // 120 sec.
 
@@ -29,16 +28,17 @@ void setup() {
     Serial.begin(SERIAL_BAUD_RATE);
   }
   
-  client.setTimeout(WIFI_CLIENT_TIMEOUT);
-
   pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
   preparePinMode();
   testLeds();
 
   setInsecureWifiClient();
+  initResourceClient(secureClient);
 
-  if (esp_reset_reason() == ESP_RST_SW) {
-    LOG(F("[BLE] Auto-advertising after SW reboot"));
+  if (esp_reset_reason() == ESP_RST_SW && bleRebootRequested) {
+    bleRebootRequested = false;
+    LOG(F("[BLE] Auto-advertising after reboot command"));
+    initBle();
     startBleAdvertising();
   } else {
     connectToWifi();
@@ -75,7 +75,6 @@ static void handleNewWifiConfig() {
 
   LOG("[Loop] Applying new Wi-Fi config: " + String(ssid));
   writeWifiConf(ssid, passphrase);
-  connectToWifi();
 }
 
 static void handleNewUrlConfig() {
