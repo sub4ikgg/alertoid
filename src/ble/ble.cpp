@@ -1,6 +1,7 @@
 #include "ble.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <Preferences.h>
 #include "resource/resource.h"
 #include "../debug.h"
 
@@ -15,8 +16,6 @@ char newUrlConfig[256] = "";
 bool isBleInitialized = false;
 bool isBleDeviceConnected = false;
 bool isBleAdvertising = false;
-
-RTC_DATA_ATTR bool bleRebootRequested = false;
 
 static BLECharacteristic *pTxChar;
 static BLECharacteristic *pFirmwareChar;
@@ -76,7 +75,7 @@ class UrlConfReadCallbacks : public BLECharacteristicCallbacks {
         JsonDocument doc;
         doc["url"]            = getResourceUrl();
         doc["code"]           = getResourceExpectedCode();
-        doc["check_interval"] = getResourceCheckInterval() * 10;
+        doc["check_interval"] = getResourceCheckInterval() / 10;
 
         String json;
         serializeJson(doc, json);
@@ -89,7 +88,10 @@ class RebootCallbacks : public BLECharacteristicCallbacks {
         String msg = pChar->getValue().c_str();
         if (msg == "reboot") {
             LOG(F("[BLE] Rebooting..."));
-            bleRebootRequested = true;
+            Preferences prefs;
+            prefs.begin("ble", false);
+            prefs.putBool("reboot", true);
+            prefs.end();
             ESP.restart();
         }
     }
@@ -100,6 +102,21 @@ class FirmwareCallbacks : public BLECharacteristicCallbacks {
         pChar->setValue(getFirmwareJson().c_str());
     }
 };
+
+bool checkAndClearBleRebootFlag() {
+    Preferences prefs;
+    prefs.begin("ble", true); // read-only
+    bool flag = prefs.getBool("reboot", false);
+    prefs.end();
+
+    if (flag) {
+        prefs.begin("ble", false);
+        prefs.putBool("reboot", false);
+        prefs.end();
+    }
+
+    return flag;
+}
 
 void initBle() {
     if (isBleInitialized) return;

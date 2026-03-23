@@ -35,20 +35,13 @@ void setup() {
   setInsecureWifiClient();
   initResourceClient(secureClient);
 
-  if (esp_reset_reason() == ESP_RST_SW && bleRebootRequested) {
-    bleRebootRequested = false;
+  if (esp_reset_reason() == ESP_RST_SW && checkAndClearBleRebootFlag()) {
     LOG(F("[BLE] Auto-advertising after reboot command"));
     initBle();
     startBleAdvertising();
-  } else {
-    connectToWifi();
   }
 
   resourceCheckingCounter = getResourceCheckInterval();
-
-  configTime(0, 0, "pool.ntp.org", "time.nist.gov");
-  struct tm timeinfo;
-  while (!getLocalTime(&timeinfo)) { delay(500); }
 }
 
 static void setInsecureWifiClient() {

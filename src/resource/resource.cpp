@@ -35,8 +35,9 @@ void checkResourceAvailability() {
 
   loadPrefsIfNeeded();
 
+  LOG("[Resource] Current check interval: " + String(_checkInterval / 10) + " sec.");
   LOG(F("[Resource] Checking resource availability..."));
-  LOG("[Resource] " + String(_url));
+  LOG("[Resource] " + String(_url) + " with code: " + String(_expectedCode));
 
   HTTPClient http;
   http.begin(*_secureClient, _url);
