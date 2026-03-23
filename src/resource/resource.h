@@ -2,11 +2,13 @@
 #define RESOURCE_H
 
 #include <Arduino.h>
+#include <WiFiClientSecure.h>
 
+void initResourceClient(WiFiClientSecure& client);
 void checkResourceAvailability();
-void writeResourceConf(String url, int expectedCode, int checkInterval);
+void writeResourceConf(const char* url, int expectedCode, int checkInterval);
 int getResourceCheckInterval();
-String getResourceUrl();
+const char* getResourceUrl();
 int getResourceExpectedCode();
 
 #endif

@@ -17,11 +17,16 @@ static const char* DEFAULT_RESOURCE_URL  = "https://httpbin.org/status/200";
 const int DEFAULT_EXPECTED_CODE          = 200;
 const int DEFAULT_CHECK_INTERVAL         = 50;
 
-static String _url;
+static WiFiClientSecure* _secureClient = nullptr;
+static char _url[256] = "";
 static int _expectedCode    = -1;
 static int _checkInterval   = -1;
 
 static void loadPrefsIfNeeded();
+
+void initResourceClient(WiFiClientSecure& client) {
+  _secureClient = &client;
+}
 
 void checkResourceAvailability() {
   LOG("[Resource] Left memory before check: " + String(ESP.getMaxAllocHeap()));
@@ -31,10 +36,10 @@ void checkResourceAvailability() {
   loadPrefsIfNeeded();
 
   LOG(F("[Resource] Checking resource availability..."));
-  LOG("[Resource] " + _url);
+  LOG("[Resource] " + String(_url));
 
   HTTPClient http;
-  http.begin(_url.c_str());
+  http.begin(*_secureClient, _url);
 
   int code = http.GET();
   http.end();
@@ -72,13 +77,14 @@ static void loadPrefsIfNeeded() {
 
   Preferences prefs;
   prefs.begin(PREFS_NAMESPACE);
-  _url           = prefs.isKey(PREFS_KEY_URL)      ? prefs.getString(PREFS_KEY_URL)  : DEFAULT_RESOURCE_URL;
+  String url     = prefs.isKey(PREFS_KEY_URL) ? prefs.getString(PREFS_KEY_URL) : DEFAULT_RESOURCE_URL;
+  strncpy(_url, url.c_str(), sizeof(_url) - 1);
   _expectedCode  = prefs.isKey(PREFS_KEY_CODE)     ? prefs.getInt(PREFS_KEY_CODE)    : DEFAULT_EXPECTED_CODE;
   _checkInterval = prefs.isKey(PREFS_KEY_INTERVAL) ? prefs.getInt(PREFS_KEY_INTERVAL): DEFAULT_CHECK_INTERVAL;
   prefs.end();
 }
 
-void writeResourceConf(String url, int expectedCode, int checkInterval) {
+void writeResourceConf(const char* url, int expectedCode, int checkInterval) {
   Preferences prefs;
   prefs.begin(PREFS_NAMESPACE);
   prefs.putString(PREFS_KEY_URL, url);
@@ -86,7 +92,7 @@ void writeResourceConf(String url, int expectedCode, int checkInterval) {
   prefs.putInt(PREFS_KEY_INTERVAL, checkInterval);
   prefs.end();
 
-  _url           = url;
+  strncpy(_url, url, sizeof(_url) - 1);
   _expectedCode  = expectedCode;
   _checkInterval = checkInterval;
 }
@@ -96,7 +102,7 @@ int getResourceCheckInterval() {
   return _checkInterval;
 }
 
-String getResourceUrl() {
+const char* getResourceUrl() {
   loadPrefsIfNeeded();
   return _url;
 }
