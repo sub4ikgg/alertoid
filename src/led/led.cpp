@@ -2,8 +2,8 @@
 
 #include <Arduino.h>
 
-const uint8_t Y_PIN = 27;
-const uint8_t G_PIN = 25;
+const uint8_t Y_PIN = 25;
+const uint8_t G_PIN = 27;
 const uint8_t R_PIN = 32;
 
 void preparePinMode() {
