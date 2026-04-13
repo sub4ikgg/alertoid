@@ -2,12 +2,17 @@
 
 ESP32-based alert device that monitors HTTP endpoint availability and signals the result via LEDs. Configure Wi-Fi credentials and the monitored URL wirelessly over BLE using a companion app.
 
+**GitHub:** [sub4ikgg/alertoid](https://github.com/sub4ikgg/alertoid) · **Firmware:** `1.0.0`
+
 ## How it works
 
-1. On first boot, hold the **BOOT button** to enter BLE configuration mode.
+1. On first boot, hold the **BOOT button for ~2 seconds** to enter BLE configuration mode.
 2. Send Wi-Fi credentials and the URL to monitor via BLE.
 3. The device connects to Wi-Fi and starts polling the URL at the configured interval.
 4. LEDs indicate the current state at a glance.
+5. On BLE disconnect, the device restarts automatically.
+
+> BLE advertising auto-stops after ~24 seconds if no client connects.
 
 ## LED States
 
@@ -18,6 +23,8 @@ ESP32-based alert device that monitors HTTP endpoint availability and signals th
 | Resource unavailable | off | off | rapid blinks, stays on |
 | BLE advertising | blinks | off | blinks (sync) |
 | BLE connected | alternates with red | off | alternates with yellow |
+
+> If the HTTP request fails (network error), the device retries silently on the next check cycle without changing LED state.
 
 ## Hardware
 
@@ -42,7 +49,7 @@ Device advertises as `Alertoid-<MAC>`. Connect with any BLE client that supports
 | Firmware info | `...05` | Read | `{"firmware":"1.0.0","mac":"...","serial":"..."}` |
 | Reboot | `...06` | Write | `"reboot"` |
 
-`check_interval` is in seconds (minimum effective value: 1 s, default: 5 s).
+`check_interval` is in seconds (default: 5 s). After a reboot command, the device restarts and automatically re-enters BLE advertising mode.
 
 ## Build & Flash
 
